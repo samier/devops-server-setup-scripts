@@ -1,21 +1,43 @@
-# Use the official PHP 8.3 CLI image
-FROM php:8.3-cli
+# Use PHP 8.3 CLI on Alpine Linux
+FROM php:8.3-cli-alpine
 
-# Install system dependencies and OpenSwoole
-RUN apt-get update && apt-get install -y \
+# Install system dependencies and build tools
+RUN apk add --no-cache \
     git \
     unzip \
     curl \
     libpng-dev \
-    libonig-dev \
+    libjpeg-turbo-dev \
+    libwebp-dev \
+    libxpm-dev \
     libxml2-dev \
     libzip-dev \
+    oniguruma-dev \
     supervisor \
-    libssl-dev \
-    pkg-config \
-    && pecl install openswoole \
-    && docker-php-ext-enable openswoole \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    openssl-dev \
+    make \
+    gcc \
+    g++ \
+    autoconf \
+    icu-dev \
+    zlib-dev \
+    bash
+
+# Install PHP extensions commonly required by Laravel and Octane
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    bcmath \
+    pcntl \
+    zip \
+    exif \
+    intl \
+    opcache \
+    gd
+
+# Install OpenSwoole via PECL
+RUN pecl install openswoole \
+    && docker-php-ext-enable openswoole
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
@@ -23,21 +45,19 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy Laravel application files
+# Copy application files
 COPY . /var/www
 
-# Install Laravel dependencies
+# Install PHP dependencies (skip for pure CI builds if not needed)
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Copy Supervisor configuration
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY laravel-octane-worker.conf /etc/supervisor/conf.d/laravel-octane-worker.conf
 
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
 
-# Expose port for OpenSwoole server (default 8000)
-EXPOSE 8000
 
-# Start Supervisor
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+# Start Supervisor (which will start Octane/OpenSwoole)
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/laravel-octane-worker.conf"]
