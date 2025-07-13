@@ -1,0 +1,43 @@
+# Use the official PHP 8.3 CLI image
+FROM php:8.3-cli
+
+# Install system dependencies and OpenSwoole
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    supervisor \
+    libssl-dev \
+    pkg-config \
+    && pecl install openswoole \
+    && docker-php-ext-enable openswoole \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Install Composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www
+
+# Copy Laravel application files
+COPY . /var/www
+
+# Install Laravel dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+
+# Copy Supervisor configuration
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Set permissions for Laravel
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www/storage
+
+# Expose port for OpenSwoole server (default 8000)
+EXPOSE 8000
+
+# Start Supervisor
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
