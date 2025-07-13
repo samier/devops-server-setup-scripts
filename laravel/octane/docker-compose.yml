@@ -3,4 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel-octane
+    ports:
+      - "3001:3001"
+    container_name: domain-search-laravel
