@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgresdb
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: myuser         # Change to a strong value
+      POSTGRES_PASSWORD: mysecretpw # Change to a strong value!
+      POSTGRES_DB: mydatabase
+      # Optional security enhancements:
+      # POSTGRES_INITDB_ARGS: "--data-checksums"
+      # POSTGRES_HOST_AUTH_METHOD: "scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backups:/backups       # For backups (see tips below)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  pgdata:
+    driver: local
