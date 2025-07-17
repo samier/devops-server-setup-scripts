@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Usage: sudo ./add_ssh_user.sh <username> <public_key_file_or_string>
-# Usage: sudo ./add_ssh_user.sh newuser "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
+# Executable permission: chmod +x create-user-ubuntu.sh
+# Usage: sudo ./create-user-ubuntu.sh <username> <public_key_file_or_string>
+# Usage: sudo ./create-user-ubuntu.sh newuser "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC..."
 
 USERNAME="$1"
 PUBKEY_INPUT="$2"
