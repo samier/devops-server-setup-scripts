@@ -6,7 +6,7 @@ set -e
 REAL_USER=$(logname)
 USER_HOME=$(eval echo "~$REAL_USER")
 VHOST_NAME="$REAL_USER.local"
-LARAVEL_ROOT="$USER_HOME/www/$VHOST_NAME"
+LARAVEL_ROOT="$USER_HOME/classcare_2.0"
 PUBLIC_ROOT="$LARAVEL_ROOT/public"
 
 echo "Detected non-root user: $REAL_USER"
@@ -41,8 +41,8 @@ sudo ufw --force enable
 sudo ufw status verbose
 
 # 7. --- Laravel/Angular Setup Directories ---
-sudo mkdir -p "$PUBLIC_ROOT"
-sudo chown -R "$REAL_USER":"$REAL_USER" "$LARAVEL_ROOT"
+#sudo mkdir -p "$PUBLIC_ROOT"
+#sudo chown -R "$REAL_USER":"$REAL_USER" "$LARAVEL_ROOT"
 
 # 8. Add a test file in public just in case
 echo "<h1>Hello from $VHOST_NAME - NGINX reverse proxy for Laravel/Octane with Angular</h1>" | sudo tee "$PUBLIC_ROOT/index.html"
@@ -61,11 +61,15 @@ server {
     access_log /var/log/nginx/${VHOST_NAME}_access.log;
     error_log /var/log/nginx/${VHOST_NAME}_error.log;
 
-    # Try static files first, then proxy all else to Octane
-    location / {
-        try_files \$uri \$uri/ @octane;
+    location /app {
+        #try_files $uri $uri/ $uri.html $uri.php =404;
+       try_files $uri @rewriteappangular;
     }
 
+    location @rewriteappangular {
+        rewrite ^(.*)$ /app/index.html last;
+    }
+    
     location @octane {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
@@ -77,17 +81,6 @@ server {
         proxy_buffering off;
     }
 
-    # If you want to explicitly proxy /api or /backend requests:
-    #location /api {
-    #    proxy_pass http://127.0.0.1:8000;
-    #    proxy_set_header Host \$host;
-    #    proxy_set_header X-Real-IP \$remote_addr;
-    #    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    #    proxy_set_header X-Forwarded-Proto \$scheme;
-    #    proxy_http_version 1.1;
-    #    proxy_set_header Connection "";
-    #    proxy_buffering off;
-    #}
 }
 EOF
 
