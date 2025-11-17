@@ -15,5 +15,7 @@
 ### To stop, remove and rebuild the container 
 
 `docker stop classcare-laravel` 
+
 `docker rm classcare-laravel` 
+
 `docker compose up -d --build`
