@@ -23,8 +23,21 @@ docker-compose up -d
 # Check if containers are running
 docker-compose ps
 
-# View logs
+# Stop services
+docker-compose down
+
+# Update n8n to latest version
+docker-compose pull
+docker-compose up -d
+
+# View real-time logs
 docker-compose logs -f
+
+# Access n8n container shell
+docker-compose exec n8n /bin/sh
+
+# Restart specific service
+docker-compose restart n8n
 
 # Configure firewall
 sudo ufw allow 22/tcp
