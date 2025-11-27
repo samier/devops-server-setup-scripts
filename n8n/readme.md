@@ -28,11 +28,17 @@ docker-compose logs -f
 
 # Configure firewall
 sudo ufw allow 22/tcp
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw allow 5678/tcp
-sudo ufw enable
-sudo ufw enable
-ufw reload
-ufw status
 
+sudo ufw allow 80/tcp
+
+sudo ufw allow 443/tcp
+
+sudo ufw allow 5678/tcp
+
+sudo ufw enable
+
+sudo ufw enable
+
+ufw reload
+
+ufw status
